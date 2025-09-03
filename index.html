@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worksheet Generator - Vidhyagrih Classes</title>
+    <!-- ADDED: SortableJS Library for Drag & Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        /* All CSS from the original file remains unchanged... */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        .main-content { padding: 40px; }
+        .form-section { background: #f8f9fa; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); }
+        .form-section h2 { color: #1a237e; margin-bottom: 20px; font-size: 1.5em; border-bottom: 2px solid #3949ab; padding-bottom: 10px; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; color: #333; }
+        .form-group input, .form-group select { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1); }
+        .upload-area { border: 3px dashed #3949ab; border-radius: 15px; padding: 40px; text-align: center; background: #f8f9ff; transition: all 0.3s ease; cursor: pointer; }
+        .upload-area:hover { background: #f0f2ff; border-color: #1a237e; }
+        .upload-area.dragover { background: #e8eaff; border-color: #1a237e; }
+        .upload-icon { font-size: 3em; color: #3949ab; margin-bottom: 20px; }
+        .upload-text { font-size: 1.2em; color: #666; margin-bottom: 10px; }
+        .upload-subtext { color: #999; font-size: 0.9em; }
+        .file-input { display: none; }
+        .image-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+        .image-item { position: relative; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); cursor: grab; }
+        .image-item img { width: 100%; height: 120px; object-fit: cover; }
+        .image-item .remove-btn { position: absolute; top: 5px; right: 5px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .api-key-section { background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .api-key-section h3 { color: #856404; margin-bottom: 10px; }
+        .api-key-section p { color: #856404; margin-bottom: 10px; font-size: 0.9em; }
+        .generate-btn { background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; border: none; padding: 15px 40px; font-size: 1.1em; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
+        .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4); }
+        .generate-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .loading.show { display: block; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3949ab; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .result-section { display: none; background: #f8f9fa; padding: 30px; border-radius: 15px; margin-top: 30px; }
+        .result-section.show { display: block; }
+        .result-section h3 { color: #1a237e; margin-bottom: 20px; }
+        .worksheet-preview { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 20px; max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
+        .download-btn { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); color: white; border: none; padding: 12px 30px; font-size: 1em; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; margin-right: 10px; margin-bottom: 10px; }
+        .download-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .download-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3); }
+        .download-btn.share-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .download-btn.share-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); }
+        .error-message, .success-message { padding: 15px; border-radius: 10px; margin: 20px 0; display: none; }
+        .error-message { background: #ffebee; color: #c62828; border-left: 4px solid #f44336; }
+        .success-message { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #4caf50; }
+        .error-message.show, .success-message.show { display: block; }
+        @media (max-width: 768px) { .main-content { padding: 20px; } .form-row { grid-template-columns: 1fr; } .header h1 { font-size: 2em; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Worksheet Generator</h1>
+            <p>Transform your teaching materials into practice worksheets</p>
+        </div>
+
+        <div class="main-content">
+            <!-- API Key Section -->
+            <div class="form-section">
+                <h2>🔑 API Configuration</h2>
+                <div class="api-key-section">
+                    <h3>Gemini API Key</h3>
+                    <p>Enter your Google Gemini API key to generate worksheets. You can get one from the Google AI Studio.</p>
+                    <div class="form-group">
+                        <input type="password" id="apiKey" placeholder="Enter your Gemini API key">
+                    </div>
+                    <!-- ADDED: Checkbox to save API key -->
+                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+                        <input type="checkbox" id="saveApiKey" style="width: auto;">
+                        <label for="saveApiKey" style="margin-bottom: 0;">Save API Key in this browser</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Information Form -->
+            <div class="form-section">
+                <h2>📝 Student Information</h2>
+                <div class="form-row">
+                    <div class="form-group"><label for="studentName">Student Name</label><input type="text" id="studentName" placeholder="Enter student name" value="Harry Potter"></div>
+                    <div class="form-group"><label for="studentClass">Class</label><input type="text" id="studentClass" placeholder="Enter class" value="Unknown"></div>
+                    <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" placeholder="Enter subject" value="Unknown"></div>
+                    <div class="form-group"><label for="chapter">Chapter</label><input type="text" id="chapter" placeholder="Enter chapter" value="Unknown"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="coachingName">Coaching Name</label><input type="text" id="coachingName" placeholder="Enter coaching name" value="Vidhyagrih Classes"></div>
+                </div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="form-section">
+                <h2>📸 Upload & Reorder Images</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click here or drag & drop images</div>
+                    <div class="upload-subtext">Supports JPEG, PNG, WebP formats</div>
+                    <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+                </div>
+                <div class="image-preview" id="imagePreview"></div>
+            </div>
+
+            <!-- Generate Button -->
+            <div style="text-align: center;">
+                <button class="generate-btn" id="generateBtn">🚀 Generate Worksheet</button>
+            </div>
+
+            <!-- Loading & Message Sections -->
+            <div class="loading" id="loadingSection"><div class="spinner"></div><p>Generating your worksheet... Please wait</p></div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <!-- Result Section -->
+            <div class="result-section" id="resultSection">
+                <h3>📄 Generated Worksheet</h3>
+                <div class="worksheet-preview" id="worksheetPreview"></div>
+                <button class="download-btn" id="downloadMarkdown" disabled>📥 Download Markdown</button>
+                <button class="download-btn" id="downloadPDF" disabled>📄 Download PDF (Adobe)</button>
+                <button class="download-btn share-btn" id="sharePDF" disabled>🔗 Share PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class WorksheetGenerator {
+            constructor() {
+                this.uploadedImages = [];
+                this.generatedWorksheet = '';
+                this.initializeEventListeners();
+                this.initializeSortable();
+                this.loadApiKey(); // Load saved API key on startup
+            }
+
+            initializeEventListeners() {
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('fileInput');
+                const generateBtn = document.getElementById('generateBtn');
+                const downloadMarkdown = document.getElementById('downloadMarkdown');
+                const downloadPDF = document.getElementById('downloadPDF');
+                const sharePDF = document.getElementById('sharePDF');
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files));
+                
+                ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (eventName === 'dragover') uploadArea.classList.add('dragover');
+                        else uploadArea.classList.remove('dragover');
+                        if (eventName === 'drop') this.handleFileUpload(e.dataTransfer.files);
+                    });
+                });
+
+                generateBtn.addEventListener('click', () => this.generateWorksheet());
+                downloadMarkdown.addEventListener('click', () => this.downloadMarkdown());
+                downloadPDF.addEventListener('click', () => this.downloadAdobePDF());
+                sharePDF.addEventListener('click', () => this.sharePDF());
+            }
+            
+            // NEW: Initialize SortableJS for drag-and-drop reordering
+            initializeSortable() {
+                const preview = document.getElementById('imagePreview');
+                new Sortable(preview, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: (evt) => {
+                        const movedItem = this.uploadedImages.splice(evt.oldIndex, 1)[0];
+                        this.uploadedImages.splice(evt.newIndex, 0, movedItem);
+                        this.updateImagePreview(); // Re-render to fix indices
+                    }
+                });
+            }
+
+            // NEW: Load API key from localStorage
+            loadApiKey() {
+                const savedKey = localStorage.getItem('geminiApiKey');
+                if (savedKey) {
+                    document.getElementById('apiKey').value = savedKey;
+                    document.getElementById('saveApiKey').checked = true;
+                }
+            }
+
+            // NEW: Save API key to localStorage if checkbox is checked
+            saveApiKey() {
+                const apiKey = document.getElementById('apiKey').value.trim();
+                const saveCheckbox = document.getElementById('saveApiKey');
+                if (saveCheckbox.checked && apiKey) {
+                    localStorage.setItem('geminiApiKey', apiKey);
+                } else {
+                    localStorage.removeItem('geminiApiKey');
+                }
+            }
+
+            handleFileUpload(files) {
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.uploadedImages.push({
+                                file: file,
+                                dataUrl: e.target.result,
+                                base64: e.target.result.split(',')[1]
+                            });
+                            this.updateImagePreview();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            updateImagePreview() {
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = '';
+                this.uploadedImages.forEach((image, index) => {
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-item';
+                    imageItem.innerHTML = `
+                        <img src="${image.dataUrl}" alt="Uploaded image ${index + 1}">
+                        <button class="remove-btn" onclick="worksheetGenerator.removeImage(${index})">×</button>
+                    `;
+                    preview.appendChild(imageItem);
+                });
+            }
+
+            removeImage(index) {
+                this.uploadedImages.splice(index, 1);
+                this.updateImagePreview();
+            }
+
+            async generateWorksheet() {
+                if (this.uploadedImages.length === 0) {
+                    this.showError('Please upload at least one image');
+                    return;
+                }
+                const apiKey = document.getElementById('apiKey').value.trim();
+                if (!apiKey) {
+                    this.showError('Please enter your Gemini API key');
+                    return;
+                }
+                
+                this.saveApiKey(); // Save the key if requested
+
+                this.showLoading(true, 'Generating your worksheet... Please wait');
+                this.hideMessages();
+
+                try {
+                    const worksheet = await this.callGeminiAPI(apiKey);
+                    this.generatedWorksheet = worksheet;
+                    this.displayWorksheet(worksheet);
+                    this.showSuccess('Worksheet generated successfully!');
+                } catch (error) {
+                    this.showError('Failed to generate worksheet: ' + error.message);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+            
+            // Unchanged from original: callGeminiAPI, displayWorksheet, markdownToHtml, etc.
+            async callGeminiAPI(apiKey) {
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                // The rest of this function is identical to the original...
+                const parts = this.uploadedImages.map(image => ({
+                    inlineData: { mimeType: image.file.type, data: image.base64 }
+                }));
+                const instructionText = {
+                    text: `You are an AI assistant built to convert textbook exercise images into clean, printable, and well-structured Markdown worksheets. You must strictly follow the rules below:
+________________________________________
+🧠 Core Objective:
+Extract only clean questions from the input image and format them into valid Markdown, suitable for rendering or conversion to PDF. This worksheet must appear as a teacher-prepared worksheet with no answers, no extra content, and a professional layout.
+________________________________________
+📋 Extraction Rules:
+1.	Read all content from the attached images in the order they are provided and extract only the question statements.
+2.	Absolutely DO NOT include answers, underlined responses, checkmarks (✓), circles, hand-drawn elements, or any student annotations.
+3.	If a question or instruction is partially visible but interpretable, try to reconstruct the clean question text using the surrounding context.
+________________________________________
+📚 Section Formatting Rules:
+4.	Preserve the original section order and titles as in the textbook (e.g., A. Fill in the blanks, B. Multiple choice, C. Match the following, etc.).
+5.	Do NOT rename or change section headings — replicate them exactly as seen (except for typo corrections).
+6.	Use the ### Markdown header style for section titles (e.g., ### A. Fill in the blanks).
+________________________________________
+🔀 Question and Option Shuffling:
+7.	Inside each section, shuffle the order of the questions randomly.
+8.	If a question contains multiple-choice options, shuffle those options as well:
+o	Use lowercase labels with closing parentheses: - a), - b), - c) etc.
+9.	Do not shuffle section titles or mix questions across sections.
+________________________________________
+🧾 Markdown Output Formatting:
+10.	Format all sections and questions in clean, valid Markdown.
+o	Section headers: ### A. Fill in the blanks
+o	Questions:
+o	1. This is a sample question?
+o	Options:
+o	- a) Option 1  
+o	- b) Option 2  
+o	- c) Option 3  
+________________________________________
+🧩 HTML Table Output for Table-Based Questions:
+11.	If a question requires a tabular layout (e.g., Match the Column, Classify into groups, Matrix-based questions), use HTML <table> format embedded directly in Markdown:
+✅ Allowed tags:
+o	<table>, <thead>, <tbody>, <tr>, <th>, <td>
+✅ Example Markdown with HTML table:
+### D. Match the Following
+
+<table>
+  <thead>
+    <tr>
+      <th>Column A</th>
+      <th>Column B</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sun</td>
+      <td>Star</td>
+    </tr>
+    <tr>
+      <td>Earth</td>
+      <td>Planet</td>
+    </tr>
+    <tr>
+      <td>Moon</td>
+      <td>Satellite</td>
+    </tr>
+  </tbody>
+</table>
+12.	⚠️ Use HTML tables only when absolutely necessary, i.e., for:
+o	"Match the Column"
+o	"Sort or Classify into groups"
+o	Matrix or grid-based tabular input
+________________________________________
+❌ Output Restrictions:
+•	DO NOT include:
+o	Any explanations or summaries
+o	AI system messages like “Here’s your worksheet”
+o	Text outside the Markdown body
+o	Extra line breaks or decorative emojis unless they were in the source
+•	Return only valid and clean Markdown content — nothing else.
+________________________________________`
+                };
+                const payload = {
+                    contents: [{ role: "user", parts: [instructionText, ...parts] }],
+                    generationConfig: { responseMimeType: "text/plain" },
+                    safetySettings: [
+                        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+                    ]
+                };
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
+                }
+                const data = await response.json();
+                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                    return data.candidates[0].content.parts[0].text;
+                }
+                throw new Error('No content generated');
+            }
+
+            displayWorksheet(worksheet) {
+                const preview = document.getElementById('worksheetPreview');
+                preview.innerHTML = this.markdownToHtml(worksheet);
+                document.getElementById('resultSection').classList.add('show');
+            }
+
+            markdownToHtml(markdown) {
+                return markdown
+                    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                    .replace(/^(\d+)\. (.*$)/gm, '<p style="margin-top: 10px;"><strong>$1.</strong> $2</p>')
+                    .replace(/^- ([a-z])\) (.*$)/gm, '<p style="margin-left: 20px;">$1) $2</p>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            downloadMarkdown() {
+                if (!this.generatedWorksheet) { this.showError('No worksheet generated yet'); return; }
+                const filename = this.generateFilename('.md');
+                const blob = new Blob([this.generatedWorksheet], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a); URL.revokeObjectURL(url);
+            }
+
+            // NEW: Generate PDF via the backend service
+            async generateAdobePDFBlob() {
+                if (!this.generatedWorksheet) {
+                    this.showError('No worksheet generated yet');
+                    return null;
+                }
+                this.showLoading(true, 'Generating PDF via Adobe...');
+
+                const studentName = document.getElementById('studentName').value;
+                const studentClass = document.getElementById('studentClass').value;
+                const subject = document.getElementById('subject').value;
+                const chapter = document.getElementById('chapter').value;
+                const coachingName = document.getElementById('coachingName').value;
+
+                // Create a full, self-contained HTML document for the Adobe API
+                const fullHtml = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Worksheet</title>
+                        <style>
+                            body { font-family: Helvetica, Arial, sans-serif; font-size: 12pt; }
+                            h1 { font-size: 24pt; text-align: center; color: #1a237e; }
+                            .subheader { display: flex; justify-content: space-between; font-size: 10pt; margin: 20px 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 10px 0; }
+                            h3 { font-size: 14pt; margin-top: 20px; }
+                            table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>${coachingName}</h1>
+                        <div class="subheader">
+                            <span><b>Student:</b> ${studentName}</span>
+                            <span><b>Class:</b> ${studentClass}</span>
+                            <span><b>Subject:</b> ${subject}</span>
+                            <span><b>Chapter:</b> ${chapter}</span>
+                        </div>
+                        ${this.markdownToHtml(this.generatedWorksheet)}
+                    </body>
+                    </html>
+                `;
+
+                try {
+                    // Send the HTML to our backend server
+                    const response = await fetch('http://localhost:3000/api/generate-pdf', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ html: fullHtml })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`PDF generation failed: ${errorText}`);
+                    }
+                    return await response.blob();
+                } catch (error) {
+                    this.showError(error.message);
+                    return null;
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+            
+            async downloadAdobePDF() {
+                const blob = await this.generateAdobePDFBlob();
+                if (!blob) return;
+                
+                const filename = this.generateFilename('.pdf');
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            async sharePDF() {
+                const blob = await this.generateAdobePDFBlob();
+                if (!blob) return;
+
+                const filename = this.generateFilename('.pdf');
+                const file = new File([blob], filename, { type: 'application/pdf' });
+                const shareData = { title: 'Worksheet', text: `Worksheet: ${filename}`, files: [file] };
+                
+                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                    try {
+                        await navigator.share(shareData);
+                        this.showSuccess('Shared successfully!');
+                    } catch (error) {
+                        if (error.name !== 'AbortError') this.downloadAdobePDF();
+                    }
+                } else {
+                    this.showError('Share not supported, downloading instead.');
+                    this.downloadAdobePDF();
+                }
+            }
+            
+            // Unchanged utility functions
+            generateFilename(extension) {
+                const studentName = (document.getElementById('studentName').value || 'Student').replace(/ /g, '_');
+                const subject = document.getElementById('subject').value || 'Subject';
+                const chapter = (document.getElementById('chapter').value || 'Chapter').replace(/ /g, '_');
+                const now = new Date();
+                const timestamp = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                return `${studentName}_${subject}_${chapter}_${timestamp}${extension}`;
+            }
+
+            showLoading(show, message = 'Processing...') {
+                const loadingSection = document.getElementById('loadingSection');
+                const generateBtn = document.getElementById('generateBtn');
+                const resultButtons = document.querySelectorAll('.result-section button');
+                loadingSection.querySelector('p').textContent = message;
+                loadingSection.classList.toggle('show', show);
+                generateBtn.disabled = show;
+                if (show) {
+                    resultButtons.forEach(btn => btn.disabled = true);
+                } else if (this.generatedWorksheet) {
+                    resultButtons.forEach(btn => btn.disabled = false);
+                }
+            }
+
+            showError(message) { const errorDiv = document.getElementById('errorMessage'); errorDiv.textContent = message; errorDiv.classList.add('show'); setTimeout(() => errorDiv.classList.remove('show'), 5000); }
+            showSuccess(message) { const successDiv = document.getElementById('successMessage'); successDiv.textContent = message; successDiv.classList.add('show'); setTimeout(() => successDiv.classList.remove('show'), 3000); }
+            hideMessages() { document.getElementById('errorMessage').classList.remove('show'); document.getElementById('successMessage').classList.remove('show'); }
+        }
+
+        const worksheetGenerator = new WorksheetGenerator();
+    </script>
+</body>
+</html>
