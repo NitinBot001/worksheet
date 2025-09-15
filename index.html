@@ -268,7 +268,7 @@
             
             // Unchanged from original: callGeminiAPI, displayWorksheet, markdownToHtml, etc.
             async callGeminiAPI(apiKey) {
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-ultra:generateContent?key=${apiKey}`;
                 // The rest of this function is identical to the original...
                 const parts = this.uploadedImages.map(image => ({
                     inlineData: { mimeType: image.file.type, data: image.base64 }
@@ -535,3 +535,4 @@ ________________________________________`
 </body>
 
 </html>
+
