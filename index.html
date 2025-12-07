@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worksheet Generator - Vidhyagrih Classes</title>
-    <!-- ADDED: SortableJS Library for Drag & Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
-        /* All CSS from the original file remains unchanged... */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); overflow: hidden; }
@@ -36,6 +34,7 @@
         .api-key-section { background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
         .api-key-section h3 { color: #856404; margin-bottom: 10px; }
         .api-key-section p { color: #856404; margin-bottom: 10px; font-size: 0.9em; }
+        .model-info { background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.85em; color: #0d47a1; }
         .generate-btn { background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; border: none; padding: 15px 40px; font-size: 1.1em; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
         .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4); }
         .generate-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -67,7 +66,6 @@
         </div>
 
         <div class="main-content">
-            <!-- API Key Section -->
             <div class="form-section">
                 <h2>🔑 API Configuration</h2>
                 <div class="api-key-section">
@@ -76,29 +74,58 @@
                     <div class="form-group">
                         <input type="password" id="apiKey" placeholder="Enter your Gemini API key">
                     </div>
-                    <!-- ADDED: Checkbox to save API key -->
                     <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
                         <input type="checkbox" id="saveApiKey" style="width: auto;">
                         <label for="saveApiKey" style="margin-bottom: 0;">Save API Key in this browser</label>
                     </div>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label for="aiModel">🤖 Select AI Model</label>
+                        <select id="aiModel">
+                            <option value="models/gemini-2.5-pro" selected>Gemini 2.5 Pro - Best Quality</option>
+                            <option value="models/gemini-flash-latest">Gemini Flash (Latest) - Fast & Efficient</option>
+                            <option value="models/gemini-flash-lite-latest">Gemini Flash Lite (Latest) - Ultra Fast</option>
+                            <option value="models/gemini-2.5-flash">Gemini 2.5 Flash - Balanced</option>
+                            <option value="models/gemini-2.5-flash-lite">Gemini 2.5 Flash Lite - Quick</option>
+                            <option value="models/gemini-2.0-flash">Gemini 2.0 Flash - Fast</option>
+                            <option value="models/gemini-2.0-flash-lite">Gemini 2.0 Flash Lite - Fastest</option>
+                        </select>
+                        <div class="model-info" id="modelInfo">
+                            <strong>Gemini 2.5 Pro:</strong> Best balance of speed and quality. Recommended for most worksheets.
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Student Information Form -->
             <div class="form-section">
                 <h2>📝 Student Information</h2>
                 <div class="form-row">
-                    <div class="form-group"><label for="studentName">Student Name</label><input type="text" id="studentName" placeholder="Enter student name" value="Harry Potter"></div>
-                    <div class="form-group"><label for="studentClass">Class</label><input type="text" id="studentClass" placeholder="Enter class" value="Unknown"></div>
-                    <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" placeholder="Enter subject" value="Unknown"></div>
-                    <div class="form-group"><label for="chapter">Chapter</label><input type="text" id="chapter" placeholder="Enter chapter" value="Unknown"></div>
+                    <div class="form-group">
+                        <label for="studentName">Student Name</label>
+                        <input type="text" id="studentName" list="studentNameList" placeholder="Enter student name">
+                        <datalist id="studentNameList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentClass">Class</label>
+                        <input type="text" id="studentClass" list="studentClassList" placeholder="Enter class">
+                        <datalist id="studentClassList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" list="subjectList" placeholder="Enter subject">
+                        <datalist id="subjectList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="chapter">Chapter</label>
+                        <input type="text" id="chapter" list="chapterList" placeholder="Enter chapter">
+                        <datalist id="chapterList"></datalist>
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group"><label for="coachingName">Coaching Name</label><input type="text" id="coachingName" placeholder="Enter coaching name" value="Vidhyagrih Classes"></div>
                 </div>
             </div>
 
-            <!-- Image Upload Section -->
             <div class="form-section">
                 <h2>📸 Upload & Reorder Images</h2>
                 <div class="upload-area" id="uploadArea">
@@ -110,17 +137,14 @@
                 <div class="image-preview" id="imagePreview"></div>
             </div>
 
-            <!-- Generate Button -->
             <div style="text-align: center;">
                 <button class="generate-btn" id="generateBtn">🚀 Generate Worksheet</button>
             </div>
 
-            <!-- Loading & Message Sections -->
             <div class="loading" id="loadingSection"><div class="spinner"></div><p>Generating your worksheet... Please wait</p></div>
             <div class="error-message" id="errorMessage"></div>
             <div class="success-message" id="successMessage"></div>
 
-            <!-- Result Section -->
             <div class="result-section" id="resultSection">
                 <h3>📄 Generated Worksheet</h3>
                 <div class="worksheet-preview" id="worksheetPreview"></div>
@@ -136,9 +160,20 @@
             constructor() {
                 this.uploadedImages = [];
                 this.generatedWorksheet = '';
+                this.modelDescriptions = {
+                    'models/gemini-2.5-pro': 'Latest advanced model with enhanced understanding. Best for complex worksheets with tables and diagrams.',
+                    'models/gemini-flash-latest': 'Latest flash model optimized for speed with good quality. Great for quick worksheet generation.',
+                    'models/gemini-flash-lite-latest': 'Latest ultra-fast model for simple worksheets. Best for basic question extraction.',
+                    'models/gemini-2.5-flash': 'Balanced model with good speed and quality. Suitable for most worksheet types.',
+                    'models/gemini-2.5-flash-lite': 'Quick processing for straightforward worksheets. Fast and efficient.',
+                    'models/gemini-2.0-flash': 'Fast model with reliable performance. Good for standard worksheets.',
+                    'models/gemini-2.0-flash-lite': 'Fastest model for simple, quick worksheet generation.'
+                };
                 this.initializeEventListeners();
                 this.initializeSortable();
-                this.loadApiKey(); // Load saved API key on startup
+                this.loadApiKey();
+                this.loadStudentHistory();
+                this.updateModelInfo();
             }
 
             initializeEventListeners() {
@@ -148,6 +183,7 @@
                 const downloadMarkdown = document.getElementById('downloadMarkdown');
                 const downloadPDF = document.getElementById('downloadPDF');
                 const sharePDF = document.getElementById('sharePDF');
+                const aiModel = document.getElementById('aiModel');
 
                 uploadArea.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files));
@@ -166,9 +202,23 @@
                 downloadMarkdown.addEventListener('click', () => this.downloadMarkdown());
                 downloadPDF.addEventListener('click', () => this.downloadAdobePDF());
                 sharePDF.addEventListener('click', () => this.sharePDF());
+                aiModel.addEventListener('change', () => this.updateModelInfo());
+                
+                ['studentName', 'studentClass', 'subject', 'chapter'].forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.addEventListener('input', () => this.saveStudentInfo());
+                });
             }
             
-            // NEW: Initialize SortableJS for drag-and-drop reordering
+            updateModelInfo() {
+                const modelSelect = document.getElementById('aiModel');
+                const modelInfo = document.getElementById('modelInfo');
+                const selectedModel = modelSelect.value;
+                const modelName = modelSelect.options[modelSelect.selectedIndex].text.split(' - ')[0];
+                const description = this.modelDescriptions[selectedModel];
+                modelInfo.innerHTML = `<strong>${modelName}:</strong> ${description}`;
+            }
+
             initializeSortable() {
                 const preview = document.getElementById('imagePreview');
                 new Sortable(preview, {
@@ -177,12 +227,11 @@
                     onEnd: (evt) => {
                         const movedItem = this.uploadedImages.splice(evt.oldIndex, 1)[0];
                         this.uploadedImages.splice(evt.newIndex, 0, movedItem);
-                        this.updateImagePreview(); // Re-render to fix indices
+                        this.updateImagePreview();
                     }
                 });
             }
 
-            // NEW: Load API key from localStorage
             loadApiKey() {
                 const savedKey = localStorage.getItem('geminiApiKey');
                 if (savedKey) {
@@ -191,7 +240,72 @@
                 }
             }
 
-            // NEW: Save API key to localStorage if checkbox is checked
+            loadStudentHistory() {
+                const history = JSON.parse(localStorage.getItem('studentHistory') || '{}');
+                
+                if (history.lastUsed) {
+                    document.getElementById('studentName').value = history.lastUsed.studentName || '';
+                    document.getElementById('studentClass').value = history.lastUsed.studentClass || '';
+                    document.getElementById('subject').value = history.lastUsed.subject || '';
+                    document.getElementById('chapter').value = history.lastUsed.chapter || '';
+                }
+                
+                this.populateDatalist('studentNameList', history.studentNames || []);
+                this.populateDatalist('studentClassList', history.studentClasses || []);
+                this.populateDatalist('subjectList', history.subjects || []);
+                this.populateDatalist('chapterList', history.chapters || []);
+            }
+
+            populateDatalist(listId, items) {
+                const datalist = document.getElementById(listId);
+                datalist.innerHTML = '';
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    datalist.appendChild(option);
+                });
+            }
+
+            saveStudentInfo() {
+                const studentName = document.getElementById('studentName').value.trim();
+                const studentClass = document.getElementById('studentClass').value.trim();
+                const subject = document.getElementById('subject').value.trim();
+                const chapter = document.getElementById('chapter').value.trim();
+                
+                let history = JSON.parse(localStorage.getItem('studentHistory') || '{}');
+                
+                if (!history.studentNames) history.studentNames = [];
+                if (!history.studentClasses) history.studentClasses = [];
+                if (!history.subjects) history.subjects = [];
+                if (!history.chapters) history.chapters = [];
+                
+                if (studentName && !history.studentNames.includes(studentName)) {
+                    history.studentNames.unshift(studentName);
+                    history.studentNames = history.studentNames.slice(0, 10);
+                }
+                if (studentClass && !history.studentClasses.includes(studentClass)) {
+                    history.studentClasses.unshift(studentClass);
+                    history.studentClasses = history.studentClasses.slice(0, 10);
+                }
+                if (subject && !history.subjects.includes(subject)) {
+                    history.subjects.unshift(subject);
+                    history.subjects = history.subjects.slice(0, 10);
+                }
+                if (chapter && !history.chapters.includes(chapter)) {
+                    history.chapters.unshift(chapter);
+                    history.chapters = history.chapters.slice(0, 10);
+                }
+                
+                history.lastUsed = { studentName, studentClass, subject, chapter };
+                
+                localStorage.setItem('studentHistory', JSON.stringify(history));
+                
+                this.populateDatalist('studentNameList', history.studentNames);
+                this.populateDatalist('studentClassList', history.studentClasses);
+                this.populateDatalist('subjectList', history.subjects);
+                this.populateDatalist('chapterList', history.chapters);
+            }
+
             saveApiKey() {
                 const apiKey = document.getElementById('apiKey').value.trim();
                 const saveCheckbox = document.getElementById('saveApiKey');
@@ -249,7 +363,7 @@
                     return;
                 }
                 
-                this.saveApiKey(); // Save the key if requested
+                this.saveApiKey();
 
                 this.showLoading(true, 'Generating your worksheet... Please wait');
                 this.hideMessages();
@@ -266,13 +380,14 @@
                 }
             }
             
-            // Unchanged from original: callGeminiAPI, displayWorksheet, markdownToHtml, etc.
             async callGeminiAPI(apiKey) {
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
-                // The rest of this function is identical to the original...
+                const selectedModel = document.getElementById('aiModel').value;
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/${selectedModel}:generateContent?key=${apiKey}`;
+                
                 const parts = this.uploadedImages.map(image => ({
                     inlineData: { mimeType: image.file.type, data: image.base64 }
                 }));
+                
                 const instructionText = {
                     text: `You are an AI assistant built to convert textbook exercise images into clean, printable, and well-structured Markdown worksheets. You must strictly follow the rules below:
 ________________________________________
@@ -342,12 +457,13 @@ ________________________________________
 ❌ Output Restrictions:
 •	DO NOT include:
 o	Any explanations or summaries
-o	AI system messages like “Here’s your worksheet”
+o	AI system messages like "Here's your worksheet"
 o	Text outside the Markdown body
 o	Extra line breaks or decorative emojis unless they were in the source
 •	Return only valid and clean Markdown content — nothing else.
 ________________________________________`
                 };
+                
                 const payload = {
                     contents: [{ role: "user", parts: [instructionText, ...parts] }],
                     generationConfig: { responseMimeType: "text/plain" },
@@ -358,15 +474,18 @@ ________________________________________`
                         {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
                     ]
                 };
+                
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
                     throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
                 }
+                
                 const data = await response.json();
                 if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
                     return data.candidates[0].content.parts[0].text;
@@ -400,21 +519,18 @@ ________________________________________`
                 document.body.removeChild(a); URL.revokeObjectURL(url);
             }
 
-            // NEW: Generate PDF via the backend service
             async generateAdobePDFBlob() {
                 if (!this.generatedWorksheet) {
                     this.showError('No worksheet generated yet');
                     return null;
                 }
                 this.showLoading(true, 'Generating PDF via Adobe...');
-
                 const studentName = document.getElementById('studentName').value;
                 const studentClass = document.getElementById('studentClass').value;
                 const subject = document.getElementById('subject').value;
                 const chapter = document.getElementById('chapter').value;
                 const coachingName = document.getElementById('coachingName').value;
 
-                // Create a full, self-contained HTML document for the Adobe API
                 const fullHtml = `
                     <!DOCTYPE html>
                     <html lang="en">
@@ -445,7 +561,6 @@ ________________________________________`
                 `;
 
                 try {
-                    // Send the HTML to our backend server
                     const response = await fetch('https://worksheet-rust.vercel.app/api/generate-pdf', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -501,14 +616,14 @@ ________________________________________`
                 }
             }
             
-            // Unchanged utility functions
             generateFilename(extension) {
                 const studentName = (document.getElementById('studentName').value || 'Student').replace(/ /g, '_');
+                const classs = document.getElementById('studentClass').value || 'class';
                 const subject = document.getElementById('subject').value || 'Subject';
                 const chapter = (document.getElementById('chapter').value || 'Chapter').replace(/ /g, '_');
                 const now = new Date();
                 const timestamp = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-                return `${studentName}_${subject}_${chapter}_${timestamp}${extension}`;
+                return `${studentName}_${classs}_${subject}_${chapter}_${timestamp}${extension}`;
             }
 
             showLoading(show, message = 'Processing...') {
@@ -533,7 +648,4 @@ ________________________________________`
         const worksheetGenerator = new WorksheetGenerator();
     </script>
 </body>
-
 </html>
-
-
